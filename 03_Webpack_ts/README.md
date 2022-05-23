@@ -44,3 +44,23 @@
 ```
   npm install webpack-dev-server -D
 ```
+
+在webpack.config.js中配置 serve 脚本，也可以在其中配置devServer来进行端口号等进一步的设置。
+
+此时执行 npm run serve 会报错：原因是我们修改的resolve.extensions中只包含".ts" 而我们使用的其他库仍然依赖的一些js代码就无法被解析，需要再添加".js"。官方提供的方法是：[可以使用'...' 访问默认拓展名](https://webpack.docschina.org/configuration/resolve/#resolveextensions)，也即：
+
+```js
+  resolve: {
+    extensions: [".ts", "..."]
+  },
+```
+
+经过上述步骤，我们编写的ts代码在修改后能够被自动更新、打包为js代码，但是要让代码实时通过浏览器展示变化，此时需要依靠一个插件： html-webpack-plugin
+
+> html-webpack-plugin的主要作用就是在webpack构建后生成html文件，同时把构建好入口js文件引入到生成的html文件中。
+
+```
+  npm install html-webpack-plugin -D
+```
+
+此时再运行 npm run serve 发现本地服务已经跑起来了，打开网页，控制台正确输出，修改代码，网页自动更新新的代码结果。
