@@ -64,7 +64,7 @@ typescript与javascript一样，不区分int整型与float浮点型，统一为n
 
 **数组中存放的元素类型最好是固定的**
 
-两种方式指定数组中的元素类型，更推荐type2，原因是此语法在jsx中有冲突（解析jsx时，与HTML的标签`<>`冲突）。
+两种方式指定数组中的元素类型，更推荐type2，原因是type1的语法在jsx中有冲突（解析jsx时，与HTML的标签`<>`冲突）。
 
 ```ts
   let names1: Array<string> = [] // 不推荐
