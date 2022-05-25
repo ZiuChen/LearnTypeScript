@@ -101,3 +101,195 @@ message本身为string类型，我们要把message赋值给一个number类型的
   console.log(info?.friend?.name) // > why
   console.log(info?.friend?.age) // > undefined
 ```
+
+## 04_!!运算符
+
+利用javascript的特性，当我们对一个非boolean类型的变量取反（即：在前面加 `!`），可以将其转为boolean类型。此时再在前面取反，则代表了：将变量转为boolean类型。
+
+```ts
+  const message1 = "Hello, World."
+  const message2 = ""
+  console.log(!!message1) // > true
+  console.log(!!message2) // > true
+```
+
+## 05_??运算符
+
+> 是ES11新增的特性，不属于ts的语法
+
+空值合并操作符 (??) 是一个逻辑操作符，当操作符的左侧是null 或 undefined 时，返回其右侧操作数，否则返回左侧操作数。
+
+```ts
+  const message = ""
+  let content = ""
+
+  content = message ?? "Default message."
+  content = message ? message : "Default message."
+  console.log(content)
+```
+
+这两条为content赋值的命令是等价的，但是使用 `??` 运算符的命令更加简短。
+
+## 06_字面量类型
+
+数据本身也是可以作为类型的。这种类型称为字面量类型，字面量类型必须始终与其值保持一致。
+
+```ts
+  // const message = "Hello, World."
+  // const message:string = "Hello, World."
+  const message: "Hello, World." = "Hello, World."
+  const num: 123 = 123
+```
+
+我们可以将多个字面量类型联合到一起：
+
+```ts
+  type AlignType = "right" | "left" | "top" | "bottom"
+  const align: AlignType = "top"
+```
+
+由于朝向 `align` 的值只有固定的几种，故可以通过字面量类型来指定。
+
+## 07_字面量推理
+
+在一些情况下，我们可以通过 `as const` 将其他类型比较宽泛的变量转为字面量类型，
+
+```ts
+  type Method = "GET" | "POST"
+  function request(url: string, method: Method) {}
+  const options = {
+    url: "https://ZiuChen.org/index.html",
+    method: "POST"
+  }
+  // request(options.url, options.method) // 报错
+```
+
+上例中，request函数的入参 method 为 Method类型，是一个字面量类型，只允许 'GET' 类与 'POST' 类传入。而options通过类型推导出的method类型为string，这就导致传入request时报错。
+
+可以通过类型断言，在传入request时，将 options.method断言为Method类：
+
+```ts
+  request(options.url, options.method as Method)
+```
+
+可以通过**字面量推理**，即 `as const` 将options转为字面量类型：
+
+```ts
+  const options = {
+    url: "https://ZiuChen.org/index.html",
+    method: "POST"
+  } as const
+  request(options.url, options.method)
+```
+
+也可以通过额外定义一个Options类型来解决此问题：
+
+```ts
+  type Options = {
+    url: string
+    method: Method
+  }
+```
+
+## 08_类型缩小
+
+在不同的代码执行过程，变量的类型是在不断的缩小的。
+
+### typeof 类型缩小
+
+typeof搭配if语句，可以实现基本的类型缩小，在函数不同的部分处理不同类型的变量。
+
+```ts
+  type ID = number | string
+  function printID(id: ID) {
+    console.log(id) // ID
+    if (typeof id === "string") {
+      console.log(id) // string
+    } else {
+      console.log(id) // number
+    }
+  }
+```
+
+### 平等的类型缩小
+
+`==` `===` `!=` `!==` `switch`
+
+```ts
+  type Direction = "left" | "right" | "top" | "bottom"
+  function printDirection(dire: Direction) {
+    if (dire == "left") {
+      console.log(dire.length) // left
+    } else if (dire === "top") {
+      console.log(dire.length) // left
+    } else {
+      console.log(dire.length) // right | bottom
+    }
+    switch (dire) {
+      case "right":
+        console.log(dire.length) // right
+        break
+
+      default: // left | top | bottom
+        console.log(dire.length)
+        break
+    }
+  }
+```
+
+### instanceof
+
+判断某一个实例，是不是某一种类型。
+
+> MDN: instanceof 运算符用于检测构造函数的 prototype 属性是否出现在某个实例对象的原型链上。
+
+可以通过 `instanceof` 判断一个实例是否继承自某个原型：
+
+```ts
+  function printTime(time: string | Date) {
+    if (time instanceof Date) {
+      console.log(time.toDateString()) // Date
+    } else {
+      console.log(time) // string
+    }
+  }
+  printTime(new Date())
+```
+
+除了用js默认的对象，我们也可以在自定义对象上使用 `instanceof`：
+
+```ts
+  class Student {
+    study() {}
+  }
+  class Teacher {
+    teach() {}
+  }
+  function work(person: Student | Teacher) {
+    if (person instanceof Student) {
+      person.study() // Student
+    } else {
+      person.teach()
+    }
+  }
+```
+
+### in
+
+`in` 用于判断某个属性是否存在于对象中。
+
+```ts
+  class Fish {
+    swimming() {}
+  }
+  class Dog {
+    running() {}
+  }
+  function act(animal: Fish | Dog) {
+    if ("swimming" in animal) {
+      animal.swimming()
+    } else {
+      animal.running()
+    }
+  }
+```
