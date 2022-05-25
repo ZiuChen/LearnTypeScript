@@ -78,3 +78,84 @@ function sumNew(...nums: number[]) {
 
 console.log(sumNew(5, 6, 7, 8))
 ```
+
+## 07_this的默认推导
+
+在js中，this始终指向最后调用它的对象。而在ts中，this的类型也是可以被推导出来的：
+
+```ts
+  const info = {
+    name: "Ziu",
+    eating() {
+      console.log(this.name + " eating")
+    }
+  }
+  info.eating()
+```
+
+在此例中，this被推导为info对象，也就是调用this.name，实际上也就是调用info.name。
+
+## 08_this的不明确类型
+
+### 指定this的类型
+
+在某些情况下，ts会由于this的指向不明确，代码存在隐患而报错：
+
+```ts
+  function sayHello() {
+    console.log(this.name + ", Hello!")
+  }
+  const info = {
+    name: "Ziu",
+    sayHello
+  }
+  info.sayHello()
+```
+
+> 'this' implicitly has type 'any' because it does not have a type annotation.
+
+由于是从info中调用sayHello，虽然我们知道此时this指向的是info对象，但是其他人在使用sayHello函数时，可能直接调用、也可能在其他对象内调用，这就为执行带来了不确定性，ts认为代码不安全，编译不通过。
+
+这时我们需要手动指定this的类型：
+
+```ts
+  type infoType = {
+    name: string
+  }
+  function sayHello(this: infoType) {
+    console.log(this.name + ", Hello!")
+  }
+  const info = {
+    name: "Ziu",
+    sayHello
+  }
+  info.sayHello()
+```
+
+### 隐式绑定与显式绑定
+
+在对象中调用函数时，函数中的 `this` 会被绑定到该对象上，这样的绑定称为 **隐式绑定**。
+
+而当我们希望在对象外面调用函数时也能让函数中的 `this` 指向到某一对象上时，就需要通过 `call` 与 `apply` 实现显式绑定。（人为改变this的指向）
+
+```ts
+  function eating(this: infoType, message: string) {
+    console.log(this.name + " eating", message)
+  }
+  const info2 = {
+    name: "Ziu",
+    eating: eating
+  }
+  // 隐式绑定
+  info2.eating("哈哈哈") // > Ziu eating 哈哈哈
+  // 显式绑定
+  eating.call({ name: "kobe" }, "呵呵呵") // > kobe eating 呵呵呵
+  eating.apply({ name: "james" }, ["嘿嘿嘿"]) // > james eating 嘿嘿嘿
+```
+
+**call与apply的区别：**
+
+* `call()` 第二个参数接受的是**若干个参数列表**
+* `apply()` 第二个参数接收**一个包含多个参数的数组**
+
+相关链接：[CoderWhy - 前端面试之彻底搞懂this指向](https://mp.weixin.qq.com/s/hYm0JgBI25grNG_2sCRlTA) [掘金 - this、apply、call、bind](https://juejin.cn/post/6844903496253177863)
