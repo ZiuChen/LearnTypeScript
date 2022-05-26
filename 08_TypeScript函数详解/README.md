@@ -159,3 +159,80 @@ console.log(sumNew(5, 6, 7, 8))
 * `apply()` 第二个参数接收**一个包含多个参数的数组**
 
 相关链接：[CoderWhy - 前端面试之彻底搞懂this指向](https://mp.weixin.qq.com/s/hYm0JgBI25grNG_2sCRlTA) [掘金 - this、apply、call、bind](https://juejin.cn/post/6844903496253177863)
+
+## 09_函数的重载(联合类型)
+
+设想我们需要用ts实现一个函数，可以将传入的两个参数合并并返回，参数可能是数字也可能是字符串。
+
+```ts
+  function add(num1: number | string, num2: number | string) {
+    return num1 + num2
+  }
+```
+
+上述函数在 return 部分会报错，原因是 `运算符“+”不能应用于类型“string | number”和“string | number”。`
+
+实际上，string与number是可以直接相加的，但是num1与num2并不是 `string` **或** `number` 类型，而都是 `string | number` 类型，这种类型未定义 `+` 的操作，是不可以用 `+` 的。
+
+要使用加法，可以用联合类型解决此问题：
+
+```ts
+  function add(num1: number | string, num2: number | string) {
+    if (typeof num1 === "number" && typeof num2 === "number") {
+      return num1 + num2
+    } else if (typeof num1 === "string" && typeof num2 === "string") {
+      return num1 + num2
+    } else if (typeof num1 === "number" && typeof num2 === "string") {
+      return num1 + num2
+    } else if (typeof num1 === "string" && typeof num2 === "number") {
+      return num1 + num2
+    }
+  }
+```
+
+显而易见，这样的方法实现十分臃肿，并且存在两个弊端：
+
+* 需要进行很多逻辑判断（类型缩小）
+* 返回值的类型是不确定的：`string | number`
+
+## 10_函数的重载(函数重载)
+
+函数重载的概念在很多编程语言中都存在，它代表的是：函数名称相同，但是参数不同的几个函数，就是函数重载。
+
+```ts
+function add(num1: number, num2: number): number
+function add(num1: string, num2: string): string
+function add(num1: any, num2: any): any {
+  return num1 + num2
+}
+console.log(add(20, 30)) // > 50
+console.log(add("haha", "hehe")) // > hahahehe
+console.log(add(10, "hehe")) // 报错
+console.log(add({ name: "ziu" }, { age: 99 })) // 报错
+```
+
+> 报错：没有与此调用匹配的重载。针对此实现的调用已成功，但重载的实现签名在外部不可见。
+
+将函数类型的声明，与函数的实现分开了：对于函数类型的限制使用的是上面函数的声明，对于具体函数的执行，使用的是下面函数的实现。
+
+## 11_函数的重载练习
+
+在实际开发中，选择更简单的方法实现。
+
+```ts
+  /* 联合类型实现 */
+  function getLengthUnion(args: string | any[]) {
+    return args.length
+  }
+  console.log(getLengthUnion("abc")) // > 3
+  console.log(getLengthUnion([123, 456, 798])) // > 3
+
+  /* 函数重载实现 */
+  function getLength(arg: string): number
+  function getLength(arg: any[]): number
+  function getLength(arg: any): any {
+    return arg.length
+  }
+  console.log(getLength("abc")) // > 3
+  console.log(getLength([123, 456, 798])) // > 3
+```
