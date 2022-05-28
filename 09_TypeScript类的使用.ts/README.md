@@ -225,3 +225,112 @@
 ```
 
 **不能修改，指的是不能修改值本身**，但是如果标记为 `readonly` 属性的变量时一个对象，那么此对象中的属性是可以随意修改的。*相当于它的引用（指针）是不可以修改的，但是通过指针找到它内部的属性，是可以修改的*
+
+## 08_getter-setter
+
+在实际的开发中，我们使用getter/setter访问器，访问类中的私有属性（当私有属性很多时使用自己定义的会很麻烦）
+
+```ts
+  class Person {
+    private _name: string
+    constructor(name: string) {
+      this._name = name
+    }
+    set name(newName: string) {
+      this._name = newName
+    }
+    get name() {
+      return this._name
+    }
+  }
+
+  const p = new Person("Ziu")
+  p.name = "ZiuChen" // 调用了 setter
+  console.log(p.name) // 调用了 getter
+```
+
+## 09_类的静态成员
+
+要在一个类中定义静态成员，要用 `static` 关键字。
+
+要访问类的静态成员，不需要实例化一个类：
+
+```ts
+  class Student {
+    static time: string = "20:00"
+    static attendClass() {
+      console.log("go to classroom.")
+    }
+  }
+
+  console.log(Student.time) // > 20:00
+  Student.attendClass() // > go to classroom.
+```
+
+## 10_抽象类abstract
+
+我们知道，继承是多态使用的前提：
+
+* 在定义很多通用接口时，我们通常会让调用者传入父类，通过多态来实现更灵活的调用方式
+* 但是，父类可能不需要对某些方法进行具体的实现，所以父类中定义的方法，我们可以定义为抽象方法
+
+```ts
+  function mkArea(shape: Shape) {
+    return shape.getArea()
+  }
+
+  abstract class Shape {
+    abstract getArea(): number
+  }
+
+  class Rectangle extends Shape {
+    private width: number
+    private height: number
+    constructor(width: number, height: number) {
+      super()
+      this.width = width
+      this.height = height
+    }
+    getArea() {
+      return (this.width * this.height) / 2
+    }
+  }
+
+  class Round extends Shape {
+    private radius: number
+    constructor(radius: number) {
+      super()
+      this.radius = radius
+    }
+    getArea() {
+      return Math.pow(this.radius, 2) * Math.PI
+    }
+  }
+
+  const rec = new Rectangle(10, 20)
+  const rnd = new Round(10)
+  console.log(mkArea(rec)) // > 100
+  console.log(mkArea(rnd)) // > 314.1592653589793
+```
+
+* 抽象方法只能在抽象类中定义
+* 抽象方法可以只有函数声明，没有函数实现体。
+* 抽象类中的抽象方法必须被子类实现，否则报错
+
+## 11_类的类型
+
+如题，类也可以作为一种类型，根据类创建对象。
+
+```ts
+  class Person {
+    name: string = "Ziu"
+  }
+
+  const p1: Person = new Person()
+  const p2: Person = {
+    name: "ZiuChen"
+  }
+  const p3 = (p: Person) => {
+    console.log(p.name)
+  }
+```
